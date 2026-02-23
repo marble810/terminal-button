@@ -1,99 +1,90 @@
-import {App, Editor, MarkdownView, Modal, Notice, Plugin} from 'obsidian';
-import {DEFAULT_SETTINGS, MyPluginSettings, SampleSettingTab} from "./settings";
+import {Notice, Plugin} from 'obsidian';
+import {getRibbonIconByOs, registerTerminalButtonIcons, type DesktopOS} from './icons/ribbon-icons';
+import {DEFAULT_SETTINGS, TerminalButtonSettings, TerminalButtonSettingsTab} from './settings';
+import {openPathInMacOSTerminal} from './utils/macos-terminal';
+import {getVaultAbsolutePath} from './utils/vault-path';
 
-// Remember to rename these classes and interfaces!
+const OPEN_CURRENT_VAULT_COMMAND_ID = 'open-current-vault-in-terminal';
 
-export default class MyPlugin extends Plugin {
-	settings: MyPluginSettings;
+export default class TerminalButton extends Plugin {
+	settings: TerminalButtonSettings = {...DEFAULT_SETTINGS};
+	currentOs: DesktopOS = 'unknown';
+	currentVaultPath: string | null = null;
 
 	async onload() {
 		await this.loadSettings();
+		this.currentOs = this.detectCurrentOsDesktop();
+		this.currentVaultPath = getVaultAbsolutePath(this.app);
+		registerTerminalButtonIcons();
+		const ribbonIcon = getRibbonIconByOs(this.currentOs);
 
-		// This creates an icon in the left ribbon.
-		this.addRibbonIcon('dice', 'Sample', (evt: MouseEvent) => {
-			// Called when the user clicks the icon.
-			new Notice('This is a notice!');
-		});
-
-		// This adds a status bar item to the bottom of the app. Does not work on mobile apps.
-		const statusBarItemEl = this.addStatusBarItem();
-		statusBarItemEl.setText('Status bar text');
-
-		// This adds a simple command that can be triggered anywhere
 		this.addCommand({
-			id: 'open-modal-simple',
-			name: 'Open modal (simple)',
+			id: OPEN_CURRENT_VAULT_COMMAND_ID,
+			name: 'Open current vault in terminal',
 			callback: () => {
-				new SampleModal(this.app).open();
-			}
-		});
-		// This adds an editor command that can perform some operation on the current editor instance
-		this.addCommand({
-			id: 'replace-selected',
-			name: 'Replace selected content',
-			editorCallback: (editor: Editor, view: MarkdownView) => {
-				editor.replaceSelection('Sample editor command');
-			}
-		});
-		// This adds a complex command that can check whether the current state of the app allows execution of the command
-		this.addCommand({
-			id: 'open-modal-complex',
-			name: 'Open modal (complex)',
-			checkCallback: (checking: boolean) => {
-				// Conditions to check
-				const markdownView = this.app.workspace.getActiveViewOfType(MarkdownView);
-				if (markdownView) {
-					// If checking is true, we're simply "checking" if the command can be run.
-					// If checking is false, then we want to actually perform the operation.
-					if (!checking) {
-						new SampleModal(this.app).open();
-					}
-
-					// This command will only show up in Command Palette when the check function returns true
-					return true;
-				}
-				return false;
+				void this.openCurrentVaultInMacOSTerminal();
 			}
 		});
 
-		// This adds a settings tab so the user can configure various aspects of the plugin
-		this.addSettingTab(new SampleSettingTab(this.app, this));
-
-		// If the plugin hooks up any global DOM events (on parts of the app that doesn't belong to this plugin)
-		// Using this function will automatically remove the event listener when this plugin is disabled.
-		this.registerDomEvent(document, 'click', (evt: MouseEvent) => {
-			new Notice("Click");
+		this.addRibbonIcon(ribbonIcon, 'Open current vault in terminal', () => {
+			void this.openCurrentVaultInMacOSTerminal();
 		});
 
-		// When registering intervals, this function will automatically clear the interval when the plugin is disabled.
-		this.registerInterval(window.setInterval(() => console.log('setInterval'), 5 * 60 * 1000));
-
+		this.addSettingTab(new TerminalButtonSettingsTab(this.app, this));
 	}
 
-	onunload() {
+	private detectCurrentOsDesktop(): DesktopOS {
+		switch (process.platform) {
+			case 'win32':
+				return 'windows';
+			case 'darwin':
+				return 'macos';
+			case 'linux':
+				return 'linux';
+			default:
+				return 'unknown';
+		}
 	}
 
-	async loadSettings() {
-		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData() as Partial<MyPluginSettings>);
+	async loadSettings(): Promise<void> {
+		type LegacySettings = Partial<TerminalButtonSettings> & {
+			macOSToolCommand?: string;
+		};
+		const data = (await this.loadData() as LegacySettings | null) ?? {};
+		this.settings = {
+			macOSTerminalApp: data.macOSTerminalApp ?? DEFAULT_SETTINGS.macOSTerminalApp,
+			windowsTerminalApp: data.windowsTerminalApp ?? DEFAULT_SETTINGS.windowsTerminalApp,
+			linuxTerminalApp: data.linuxTerminalApp ?? DEFAULT_SETTINGS.linuxTerminalApp,
+			sharedToolCommand: data.sharedToolCommand ?? data.macOSToolCommand ?? DEFAULT_SETTINGS.sharedToolCommand
+		};
 	}
 
-	async saveSettings() {
+	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
 	}
-}
 
-class SampleModal extends Modal {
-	constructor(app: App) {
-		super(app);
-	}
+	async openCurrentVaultInMacOSTerminal(): Promise<void> {
+		if (this.currentOs !== 'macos') {
+			new Notice('Opening a terminal is currently supported on macOS only.');
+			return;
+		}
 
-	onOpen() {
-		let {contentEl} = this;
-		contentEl.setText('Woah!');
-	}
+		const vaultPath = getVaultAbsolutePath(this.app);
+		this.currentVaultPath = vaultPath;
+		if (!vaultPath) {
+			new Notice('Could not resolve the current vault path.');
+			return;
+		}
 
-	onClose() {
-		const {contentEl} = this;
-		contentEl.empty();
+		try {
+			await openPathInMacOSTerminal({
+				terminalApp: this.settings.macOSTerminalApp,
+				vaultPath,
+				toolCommand: this.settings.sharedToolCommand
+			});
+		} catch (error) {
+			console.error('[terminal-button] failed to open terminal:', error);
+			new Notice('Failed to open terminal. Check the macOS terminal app setting.');
+		}
 	}
 }

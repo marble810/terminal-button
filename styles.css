@@ -6,3 +6,15 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.terminal-button-setting-os-icon {
+	display: inline-flex;
+	align-items: center;
+	margin-inline-end: 6px;
+	vertical-align: middle;
+}
+
+.terminal-button-setting-os-icon svg {
+	width: 16px;
+	height: 16px;
+}

@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
-	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"name": "terminal-button",
+	"version": "0.1.0",
+	"description": "Add a ribbon action to open the current vault in your terminal app.",
 	"main": "main.js",
 	"type": "module",
 	"scripts": {
