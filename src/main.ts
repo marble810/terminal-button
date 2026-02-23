@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+/* eslint-disable @typescript-eslint/no-unsafe-call */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {Notice, Plugin} from 'obsidian';
 import {getRibbonIconByOs, registerTerminalButtonIcons, type DesktopOS} from './icons/ribbon-icons';
 import {DEFAULT_SETTINGS, TerminalButtonSettings, TerminalButtonSettingsTab} from './settings';

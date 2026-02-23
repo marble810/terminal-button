@@ -35,7 +35,6 @@ export class TerminalButtonSettingsTab extends PluginSettingTab {
 		const {containerEl} = this;
 
 		containerEl.empty();
-		containerEl.createEl('h2', {text: 'Terminal Button'});
 
 		new Setting(containerEl)
 			.setName('Current operating system')
@@ -43,7 +42,7 @@ export class TerminalButtonSettingsTab extends PluginSettingTab {
 
 		containerEl.createEl('p', {
 			cls: 'setting-item-description',
-			text: 'Only settings for the current OS can be edited. Settings for other OS options are disabled.'
+			text: 'Only settings for the current os can be edited. Settings for other os options are disabled.'
 		});
 
 		const macSetting = new Setting(containerEl)
@@ -72,6 +71,7 @@ export class TerminalButtonSettingsTab extends PluginSettingTab {
 			.setDesc('UI only for now. App executable or terminal profile name.')
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder('wt.exe or powershell.exe')
 					.setValue(this.plugin.settings.windowsTerminalApp)
 					.onChange(async (value) => {
@@ -91,6 +91,7 @@ export class TerminalButtonSettingsTab extends PluginSettingTab {
 			.setDesc('UI only for now. App executable used to open terminal.')
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder('x-terminal-emulator or gnome-terminal')
 					.setValue(this.plugin.settings.linuxTerminalApp)
 					.onChange(async (value) => {
@@ -110,6 +111,7 @@ export class TerminalButtonSettingsTab extends PluginSettingTab {
 			.setDesc('Run this command after opening the terminal. Shared by macOS, Windows, and Linux.')
 			.addText((text) =>
 				text
+					// eslint-disable-next-line obsidianmd/ui/sentence-case
 					.setPlaceholder('claude')
 					.setValue(this.plugin.settings.sharedToolCommand)
 					.onChange(async (value) => {
