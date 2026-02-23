@@ -57,6 +57,11 @@ Copy these files to:
 - `manifest.json` plugin `id` is `terminal-button`.
 - The plugin is desktop-only (`isDesktopOnly: true`).
 
+## Icon Attribution
+
+The three ribbon icons in this plugin are modified from Lucide's `square-terminal` icon.
+Licensing: Lucide (ISC), with portions derived from Feather (MIT).
+
 ---
 
 # Terminal Button（Obsidian 插件）- 简体中文
@@ -117,3 +122,8 @@ Terminal Button 提供一个侧边栏按钮和命令，用于在终端中打开�
 
 - `manifest.json` 中插件 `id` 为 `terminal-button`。
 - 插件仅支持桌面端（`isDesktopOnly: true`）。
+
+## 图标声明
+
+本插件的三个 Ribbon 图标基于 Lucide 的 `square-terminal` 图标修改而来。
+许可证：Lucide（ISC），其中源自 Feather 的部分遵循 MIT。
