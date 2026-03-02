@@ -1,4 +1,5 @@
 import {Notice, Plugin} from 'obsidian';
+import {getCurrentLanguage, isUiLanguageMode, t} from './i18n';
 import {getRibbonIconByOs, registerTerminalButtonIcons, type DesktopOS} from './icons/ribbon-icons';
 import {DEFAULT_SETTINGS, TerminalButtonSettings, TerminalButtonSettingsTab} from './settings';
 import {openPathInLinuxTerminal} from './utils/linux-terminal';
@@ -51,17 +52,21 @@ export default class TerminalButton extends Plugin {
 	async loadSettings(): Promise<void> {
 		type LegacySettings = Partial<TerminalButtonSettings> & {
 			macOSToolCommand?: string;
+			uiLanguageMode?: string;
 		};
 		const data = (await this.loadData() as LegacySettings | null) ?? {};
 		const rawWindowsApp = data.windowsTerminalApp ?? DEFAULT_SETTINGS.windowsTerminalApp;
 		const shouldMigrateWindowsApp =
 			rawWindowsApp.trim().toLowerCase() === 'windows terminal';
 		const windowsTerminalApp = shouldMigrateWindowsApp ? DEFAULT_SETTINGS.windowsTerminalApp : rawWindowsApp;
+		const rawLanguageMode = data.uiLanguageMode ?? DEFAULT_SETTINGS.uiLanguageMode;
+		const uiLanguageMode = isUiLanguageMode(rawLanguageMode) ? rawLanguageMode : DEFAULT_SETTINGS.uiLanguageMode;
 		this.settings = {
 			macOSTerminalApp: data.macOSTerminalApp ?? DEFAULT_SETTINGS.macOSTerminalApp,
 			windowsTerminalApp,
 			linuxTerminalApp: data.linuxTerminalApp ?? DEFAULT_SETTINGS.linuxTerminalApp,
-			sharedToolCommand: data.sharedToolCommand ?? data.macOSToolCommand ?? DEFAULT_SETTINGS.sharedToolCommand
+			sharedToolCommand: data.sharedToolCommand ?? data.macOSToolCommand ?? DEFAULT_SETTINGS.sharedToolCommand,
+			uiLanguageMode
 		};
 
 		if (shouldMigrateWindowsApp) {
@@ -73,11 +78,12 @@ export default class TerminalButton extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	async openCurrentVaultInTerminal(): Promise<void> {
+	async openCurrentVaultInTerminal(options?: {showSuccessNotice?: boolean}): Promise<void> {
+		const language = getCurrentLanguage(this.settings.uiLanguageMode);
 		const vaultPath = getVaultAbsolutePath(this.app);
 		this.currentVaultPath = vaultPath;
 		if (!vaultPath) {
-			new Notice('Could not resolve the current vault path.');
+			new Notice(t(language, 'notice.vaultPathNotResolved'));
 			return;
 		}
 
@@ -89,9 +95,12 @@ export default class TerminalButton extends Plugin {
 						vaultPath,
 						toolCommand: this.settings.sharedToolCommand
 					});
+					if (options?.showSuccessNotice) {
+						new Notice(t(language, 'notice.testSuccess'));
+					}
 				} catch (error) {
 					console.error('[terminal-button] failed to open macOS terminal:', error);
-					new Notice('Failed to open terminal. Check the macOS terminal app setting.');
+					new Notice(t(language, 'notice.openFailed.macos'));
 				}
 				return;
 			case 'windows':
@@ -102,11 +111,14 @@ export default class TerminalButton extends Plugin {
 						toolCommand: this.settings.sharedToolCommand
 					});
 					if (this.settings.sharedToolCommand.trim() && !result.toolCommandApplied) {
-						new Notice('Opened terminal, but the launch command was not applied for this terminal app.');
+						new Notice(t(language, 'notice.toolCommandNotApplied'));
+					}
+					if (options?.showSuccessNotice) {
+						new Notice(t(language, 'notice.testSuccess'));
 					}
 				} catch (error) {
 					console.error('[terminal-button] failed to open Windows terminal:', error);
-					new Notice('Failed to open terminal. Check the Windows terminal app setting.');
+					new Notice(t(language, 'notice.openFailed.windows'));
 				}
 				return;
 			case 'linux':
@@ -117,15 +129,18 @@ export default class TerminalButton extends Plugin {
 						toolCommand: this.settings.sharedToolCommand
 					});
 					if (this.settings.sharedToolCommand.trim() && !result.toolCommandApplied) {
-						new Notice('Opened terminal, but the launch command was not applied for this terminal app.');
+						new Notice(t(language, 'notice.toolCommandNotApplied'));
+					}
+					if (options?.showSuccessNotice) {
+						new Notice(t(language, 'notice.testSuccess'));
 					}
 				} catch (error) {
 					console.error('[terminal-button] failed to open Linux terminal:', error);
-					new Notice('Failed to open terminal. Check the Linux terminal app setting.');
+					new Notice(t(language, 'notice.openFailed.linux'));
 				}
 				return;
 			default:
-				new Notice('Opening a terminal is currently supported on macOS, Windows, and Linux.');
+				new Notice(t(language, 'notice.unsupportedOs'));
 		}
 	}
 }

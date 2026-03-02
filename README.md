@@ -11,6 +11,7 @@ Terminal Button adds a ribbon action and command that opens the current vault in
 - Command: `Open current vault in terminal`.
 - Ribbon action: open the current vault path in terminal.
 - Settings for terminal app names on macOS, Windows, and Linux.
+- Settings UI language switch (Auto/System, English, 简体中文).
 - Optional shared launch command (for example, `claude`) after terminal opens.
 
 ## Current platform support
@@ -82,6 +83,7 @@ Terminal Button 提供一个侧边栏按钮和命令，用于在终端中打开�
 - 命令：`Open current vault in terminal`。
 - Ribbon 按钮：在终端中打开当前 Vault 路径。
 - 可配置 macOS、Windows、Linux 的终端应用名称。
+- 设置页支持语言切换（自动/English/简体中文）。
 - 支持可选的共享启动命令（例如 `claude`），在终端打开后执行。
 
 ## 当前平台支持

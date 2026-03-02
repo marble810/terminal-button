@@ -18,3 +18,15 @@ If your plugin does not need CSS, delete this file.
 	width: 16px;
 	height: 16px;
 }
+
+.terminal-button-current-os-icon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2px;
+}
+
+.terminal-button-current-os-icon svg {
+	width: 28px;
+	height: 28px;
+}
