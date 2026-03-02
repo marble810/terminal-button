@@ -36,6 +36,15 @@ Terminal Button adds a ribbon action and command that opens the current vault in
    `npm run dev`
 4. In Obsidian, open **Settings -> Community plugins** and enable `Terminal Button`.
 
+## Install with BRAT
+
+You can install this plugin using [obsidian42-brat](https://github.com/TfTHacker/obsidian42-brat):
+
+1. In Obsidian, install and enable **BRAT** from Community plugins.
+2. Open **BRAT settings -> Add Beta plugin**.
+3. Enter this repository URL: `https://github.com/marble810/terminal-button`
+4. Confirm to install, then enable `Terminal Button` in Community plugins.
+
 ## Build
 
 - Production build: `npm run build`
@@ -107,6 +116,15 @@ Terminal Button 提供一个侧边栏按钮和命令，用于在终端中打开�
 3. 启动监听构建：
    `npm run dev`
 4. 在 Obsidian 中打开 **Settings -> Community plugins** 并启用 `Terminal Button`。
+
+## 使用 BRAT 安装
+
+你也可以通过 [obsidian42-brat](https://github.com/TfTHacker/obsidian42-brat) 安装本插件：
+
+1. 在 Obsidian 的社区插件中安装并启用 **BRAT**。
+2. 打开 **BRAT 设置 -> Add Beta plugin**。
+3. 输入仓库地址：`https://github.com/marble810/terminal-button`
+4. 确认安装后，在社区插件列表中启用 `Terminal Button`。
 
 ## 构建
 
