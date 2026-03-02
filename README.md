@@ -3,8 +3,7 @@
 Terminal Button adds a ribbon action and command that opens the current vault in a terminal app.
 
 > [!IMPORTANT]
-> Current release status: **Only macOS launch behavior is implemented**.
-> Windows and Linux currently provide settings UI only (launch integration is not implemented yet).
+> Current release status: **macOS, Windows, and Linux launch behavior is implemented**.
 
 ## Features
 
@@ -17,8 +16,14 @@ Terminal Button adds a ribbon action and command that opens the current vault in
 ## Current platform support
 
 - macOS: implemented
-- Windows: settings UI only (launch not implemented yet)
-- Linux: settings UI only (launch not implemented yet)
+- Windows: implemented
+- Linux: implemented
+
+### Windows behavior notes
+
+- Supported executable names: `wt.exe`, `pwsh.exe`, `powershell.exe`, `cmd.exe`.
+- If `Launch command (optional, shared)` is set, it is applied for the executables above.
+- For other terminal executables, the terminal is still opened at the vault directory, but the launch command is not injected automatically.
 
 ## Install for development
 
@@ -69,8 +74,7 @@ Licensing: Lucide (ISC), with portions derived from Feather (MIT).
 Terminal Button 提供一个侧边栏按钮和命令，用于在终端中打开当前 Vault。
 
 > [!IMPORTANT]
-> 当前版本状态：**仅实现了 macOS 的实际启动功能**。
-> Windows 和 Linux 目前仅有设置界面，尚未实现终端启动能力。
+> 当前版本状态：**已实现 macOS、Windows 与 Linux 的实际启动功能**。
 
 ## 功能
 
@@ -83,8 +87,14 @@ Terminal Button 提供一个侧边栏按钮和命令，用于在终端中打开�
 ## 当前平台支持
 
 - macOS：已实现（可实际拉起终端并打开 Vault）
-- Windows：仅设置界面（尚未实现启动）
-- Linux：仅设置界面（尚未实现启动）
+- Windows：已实现（可实际拉起终端并打开 Vault）
+- Linux：已实现（可实际拉起终端并打开 Vault）
+
+### Windows 行为说明
+
+- 支持的可执行程序名：`wt.exe`、`pwsh.exe`、`powershell.exe`、`cmd.exe`。
+- 若设置了 `Launch command (optional, shared)`，上述程序会自动执行该命令。
+- 若填写其他终端可执行程序，仍会在 Vault 目录打开终端，但不会自动注入启动命令。
 
 ## 开发安装
 

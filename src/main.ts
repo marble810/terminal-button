@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-call */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {Notice, Plugin} from 'obsidian';
 import {getRibbonIconByOs, registerTerminalButtonIcons, type DesktopOS} from './icons/ribbon-icons';
 import {DEFAULT_SETTINGS, TerminalButtonSettings, TerminalButtonSettingsTab} from './settings';
+import {openPathInLinuxTerminal} from './utils/linux-terminal';
 import {openPathInMacOSTerminal} from './utils/macos-terminal';
 import {getVaultAbsolutePath} from './utils/vault-path';
+import {openPathInWindowsTerminal} from './utils/windows-terminal';
 
 const OPEN_CURRENT_VAULT_COMMAND_ID = 'open-current-vault-in-terminal';
 
@@ -25,12 +24,12 @@ export default class TerminalButton extends Plugin {
 			id: OPEN_CURRENT_VAULT_COMMAND_ID,
 			name: 'Open current vault in terminal',
 			callback: () => {
-				void this.openCurrentVaultInMacOSTerminal();
+				void this.openCurrentVaultInTerminal();
 			}
 		});
 
 		this.addRibbonIcon(ribbonIcon, 'Open current vault in terminal', () => {
-			void this.openCurrentVaultInMacOSTerminal();
+			void this.openCurrentVaultInTerminal();
 		});
 
 		this.addSettingTab(new TerminalButtonSettingsTab(this.app, this));
@@ -54,24 +53,27 @@ export default class TerminalButton extends Plugin {
 			macOSToolCommand?: string;
 		};
 		const data = (await this.loadData() as LegacySettings | null) ?? {};
+		const rawWindowsApp = data.windowsTerminalApp ?? DEFAULT_SETTINGS.windowsTerminalApp;
+		const shouldMigrateWindowsApp =
+			rawWindowsApp.trim().toLowerCase() === 'windows terminal';
+		const windowsTerminalApp = shouldMigrateWindowsApp ? DEFAULT_SETTINGS.windowsTerminalApp : rawWindowsApp;
 		this.settings = {
 			macOSTerminalApp: data.macOSTerminalApp ?? DEFAULT_SETTINGS.macOSTerminalApp,
-			windowsTerminalApp: data.windowsTerminalApp ?? DEFAULT_SETTINGS.windowsTerminalApp,
+			windowsTerminalApp,
 			linuxTerminalApp: data.linuxTerminalApp ?? DEFAULT_SETTINGS.linuxTerminalApp,
 			sharedToolCommand: data.sharedToolCommand ?? data.macOSToolCommand ?? DEFAULT_SETTINGS.sharedToolCommand
 		};
+
+		if (shouldMigrateWindowsApp) {
+			await this.saveSettings();
+		}
 	}
 
 	async saveSettings(): Promise<void> {
 		await this.saveData(this.settings);
 	}
 
-	async openCurrentVaultInMacOSTerminal(): Promise<void> {
-		if (this.currentOs !== 'macos') {
-			new Notice('Opening a terminal is currently supported on macOS only.');
-			return;
-		}
-
+	async openCurrentVaultInTerminal(): Promise<void> {
 		const vaultPath = getVaultAbsolutePath(this.app);
 		this.currentVaultPath = vaultPath;
 		if (!vaultPath) {
@@ -79,15 +81,51 @@ export default class TerminalButton extends Plugin {
 			return;
 		}
 
-		try {
-			await openPathInMacOSTerminal({
-				terminalApp: this.settings.macOSTerminalApp,
-				vaultPath,
-				toolCommand: this.settings.sharedToolCommand
-			});
-		} catch (error) {
-			console.error('[terminal-button] failed to open terminal:', error);
-			new Notice('Failed to open terminal. Check the macOS terminal app setting.');
+		switch (this.currentOs) {
+			case 'macos':
+				try {
+					await openPathInMacOSTerminal({
+						terminalApp: this.settings.macOSTerminalApp,
+						vaultPath,
+						toolCommand: this.settings.sharedToolCommand
+					});
+				} catch (error) {
+					console.error('[terminal-button] failed to open macOS terminal:', error);
+					new Notice('Failed to open terminal. Check the macOS terminal app setting.');
+				}
+				return;
+			case 'windows':
+				try {
+					const result = await openPathInWindowsTerminal({
+						terminalApp: this.settings.windowsTerminalApp,
+						vaultPath,
+						toolCommand: this.settings.sharedToolCommand
+					});
+					if (this.settings.sharedToolCommand.trim() && !result.toolCommandApplied) {
+						new Notice('Opened terminal, but the launch command was not applied for this terminal app.');
+					}
+				} catch (error) {
+					console.error('[terminal-button] failed to open Windows terminal:', error);
+					new Notice('Failed to open terminal. Check the Windows terminal app setting.');
+				}
+				return;
+			case 'linux':
+				try {
+					const result = await openPathInLinuxTerminal({
+						terminalApp: this.settings.linuxTerminalApp,
+						vaultPath,
+						toolCommand: this.settings.sharedToolCommand
+					});
+					if (this.settings.sharedToolCommand.trim() && !result.toolCommandApplied) {
+						new Notice('Opened terminal, but the launch command was not applied for this terminal app.');
+					}
+				} catch (error) {
+					console.error('[terminal-button] failed to open Linux terminal:', error);
+					new Notice('Failed to open terminal. Check the Linux terminal app setting.');
+				}
+				return;
+			default:
+				new Notice('Opening a terminal is currently supported on macOS, Windows, and Linux.');
 		}
 	}
 }

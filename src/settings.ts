@@ -11,7 +11,7 @@ export type TerminalButtonSettings = {
 
 export const DEFAULT_SETTINGS: TerminalButtonSettings = {
 	macOSTerminalApp: 'Terminal',
-	windowsTerminalApp: 'Windows Terminal',
+	windowsTerminalApp: 'wt.exe',
 	linuxTerminalApp: 'x-terminal-emulator',
 	sharedToolCommand: ''
 };
@@ -61,18 +61,18 @@ export class TerminalButtonSettingsTab extends PluginSettingTab {
 					.setButtonText('Test')
 					.setTooltip('Open the current vault path using this macOS terminal app setting.')
 					.onClick(async () => {
-						await this.plugin.openCurrentVaultInMacOSTerminal();
+						await this.plugin.openCurrentVaultInTerminal();
 					}));
 		macSetting.setDisabled(this.plugin.currentOs !== 'macos');
 		prependOsIconToSettingName(macSetting, 'macos');
 
 		const windowsSetting = new Setting(containerEl)
 			.setName('Windows terminal app')
-			.setDesc('UI only for now. App executable or terminal profile name.')
+			.setDesc('Executable name or absolute path (for example, wt.exe, pwsh.exe, powershell.exe, cmd.exe).')
 			.addText((text) =>
 				text
 					// eslint-disable-next-line obsidianmd/ui/sentence-case
-					.setPlaceholder('wt.exe or powershell.exe')
+					.setPlaceholder('wt.exe or pwsh.exe')
 					.setValue(this.plugin.settings.windowsTerminalApp)
 					.onChange(async (value) => {
 						this.plugin.settings.windowsTerminalApp = value;
@@ -81,14 +81,17 @@ export class TerminalButtonSettingsTab extends PluginSettingTab {
 			.addButton((button) =>
 				button
 					.setButtonText('Test')
-					.setTooltip('Windows terminal launch is not implemented yet.')
-					.setDisabled(true));
+					.setTooltip('Open the current vault path using this Windows terminal app setting.')
+					.onClick(async () => {
+						await this.plugin.openCurrentVaultInTerminal();
+					}));
 		windowsSetting.setDisabled(this.plugin.currentOs !== 'windows');
 		prependOsIconToSettingName(windowsSetting, 'windows');
 
 		const linuxSetting = new Setting(containerEl)
 			.setName('Linux terminal app')
-			.setDesc('UI only for now. App executable used to open terminal.')
+			// eslint-disable-next-line obsidianmd/ui/sentence-case
+			.setDesc('Executable name or absolute path (for example, x-terminal-emulator, gnome-terminal, konsole).')
 			.addText((text) =>
 				text
 					// eslint-disable-next-line obsidianmd/ui/sentence-case
@@ -101,8 +104,10 @@ export class TerminalButtonSettingsTab extends PluginSettingTab {
 			.addButton((button) =>
 				button
 					.setButtonText('Test')
-					.setTooltip('Linux terminal launch is not implemented yet.')
-					.setDisabled(true));
+					.setTooltip('Open the current vault path using this Linux terminal app setting.')
+					.onClick(async () => {
+						await this.plugin.openCurrentVaultInTerminal();
+					}));
 		linuxSetting.setDisabled(this.plugin.currentOs !== 'linux');
 		prependOsIconToSettingName(linuxSetting, 'linux');
 
