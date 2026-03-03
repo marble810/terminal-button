@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="https://github.com/marble810/terminal-button/blob/main/img/terminal-button.png?raw=true" alt="terminal-button readme banner"/>
+</p>
+
 # Terminal Button (Obsidian plugin)
 
 Terminal Button adds a ribbon action and command that opens the current vault in a terminal app.
